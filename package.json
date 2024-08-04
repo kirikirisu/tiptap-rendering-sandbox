@@ -10,7 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tiptap/core": "^2.5.8",
     "@tiptap/extension-character-count": "^2.5.8",
+    "@tiptap/extension-image": "^2.5.8",
     "@tiptap/pm": "^2.5.8",
     "@tiptap/react": "^2.5.8",
     "@tiptap/starter-kit": "^2.5.8",
