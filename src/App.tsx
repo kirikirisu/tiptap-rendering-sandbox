@@ -1,37 +1,59 @@
-import CharacterCount from "@tiptap/extension-character-count";
-import { memo, useState } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import "./App.css";
 
-const extensions = [StarterKit, CharacterCount];
+const GET_SINGLE_TODO = "get-single-todo";
 
-const content = "<p>Hello World!</p>";
+function useGetSingleTodo() {
+  return useQuery<{
+    id: number;
+    userId: number;
+    title: string;
+    body: string;
+  }>({
+    queryKey: [GET_SINGLE_TODO],
+    queryFn: async () => {
+      const response = await fetch(
+        "https://jsonplaceholder.typicode.com/posts/1"
+      );
+      const data = await response.json();
 
-const CharacterCounter = memo(({ charCount }: { charCount: number }) => {
-  return <p>{charCount}</p>;
-});
-
-function App() {
-  const [charCount, setCharCount] = useState(0);
-  const editor = useEditor({
-    extensions,
-    content,
-    onUpdate({ editor }) {
-      setCharCount(editor.storage.characterCount.characters());
+      return data;
     },
   });
+}
+
+const extensions = [StarterKit];
+
+function App() {
+  const queryClient = useQueryClient();
+
+  const { data } = useGetSingleTodo();
+  const content = data === undefined ? "" : `<p>${data.body}</p>`;
+
+  const editor = useEditor(
+    {
+      extensions,
+      content,
+    },
+    [content]
+  );
 
   if (editor === null) return false;
 
   return (
     <>
       <EditorContent editor={editor} />
-      <CharacterCounter charCount={charCount} />
       <button
         type="button"
         onClick={() => {
-          editor?.commands.setContent("<p>Update content!</p>");
+          if (data === undefined) return;
+
+          queryClient.setQueryData([GET_SINGLE_TODO], {
+            ...data,
+            body: "<p>updated content</p>",
+          });
         }}
       >
         コンテンツを更新
